@@ -1,0 +1,36 @@
+name: pyinstaller-windows
+on:
+  push:
+    paths-ignore:
+      - "gitignore"
+      - "LICENSE"
+      - "**.md"
+  workflow_dispatch:
+jobs:
+  build:
+    name: windows-build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        shell: powershell
+        run: | 
+          python -m pip install --upgrade pip
+          pip install pipenv
+          cd pdf_compare
+          pipenv --python 3.12
+          pipenv run pip install pymupdf
+          pipenv run pip install pyinstaller
+      - name: Build
+        shell: powershell
+        run: |
+          cd pdf_compare
+          pipenv run pyinstaller pdf_compare.py --onefile
+      - name: Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf_compare.exe
+          path: dist/pdf_compare.exe
